@@ -121,15 +121,15 @@ Chances <!-- add "are"? --> the application's service might usually<!-- delete "
 
 ## Helm
 
-Without Helm, or similar tools, using a local Kubernetes cluster for development is pointless beyond just experimentation purposes. We want to use the local Kubernetes cluster so that our running applications will mirror shared environments like production as closely as possible. Helm lets us accomplish this by allowing us to template out our kubernetes manifests, and abstract out only the necessary environmental differences into [values files](https://helm.sh/docs/chart_template_guide/values_files/).
+Without Helm, or similar tools, using a local Kubernetes cluster for development is pointless beyond just experimentation purposes. We want to use the local Kubernetes cluster so that our running applications will mirror shared environments, like production, as closely as possible. Helm lets us accomplish this by allowing us to template out our kubernetes manifests, and abstract out only the necessary environmental differences into [values files](https://helm.sh/docs/chart_template_guide/values_files/).
 
-When you're using Helm you'll be creating values files for every environment, I recommend creating values files for local clusters as well that can be shared with the team. You can even create personal "overrides" values files that you can use to change some minor configurations for your own purposes (just be sure to .gitignore them). Helm let's you chain these files together and gives precendence to the rightmost file. Eg, `helm upgrade my-app ./my-app -f values-local.yaml -f .values-override.yaml`.
+When you're using Helm you'll be creating values files for every environment,<!-- end sentence & start new one --> I recommend creating values files for local clusters as well that can be shared with the team. You can even create personal "overrides" values files that you can use to change some minor configurations for your own purposes (just be sure to .gitignore them). Helm lets you chain these files together, and gives precendence to the rightmost file. E.g., `helm upgrade my-app ./my-app -f values-local.yaml -f .values-override.yaml`.
 
-Another benefit of Helm is in it's package management. If your application requires another team's application up and running, they can publish their Helm chart to a remote repository like a [ChartMuseum](https://github.com/helm/chartmuseum), you can install their application into your Kubernetes by naming that remote chart combined with a local values file. Eg, `helm install other-teams-app https://charts.mycompany.com/other-teams-app-1.2.3.tgz -f values-other-teams-app.yaml`. This is convenient because it means you don't have to checkout their project and dig through it for their helm charts to get up and running, all you need to supply is your own values file.
+Another benefit of Helm is in it's package management. If your application requires another team's application up and running, they can publish their Helm chart to a remote repository like a [ChartMuseum](https://github.com/helm/chartmuseum). You can then install their application into your Kubernetes by naming that remote chart combined with a local values file. E.g., `helm install other-teams-app https://charts.mycompany.com/other-teams-app-1.2.3.tgz -f values-other-teams-app.yaml`. This is convenient because it means you don't have to checkout their project and dig through it for their helm charts to get up and running - all you need to supply is your own values file.
 
 ## Scripting
 
-Working with kubernetes, and then layering in extra tools like Helm, there are a lot of commands to get to know. Most of your team will probably need some kind of containerized apps running locally, but it can be a high bar to expect them to know all of the docker and kubectl and helm commands. As well for your own convenience you want to take the things that are done often and condense them into some simpler scripts. Things like:
+Working with kubernetes, and then layering in extra tools like Helm, there are a lot of commands to get to know. Most of your team will probably need some kind of containerized apps running locally, but it can be a high bar to expect them to know all of the docker and kubectl and helm commands. As well for your own convenience you want to take the things that are done often and condense them into some simpler scripts <!-- rework to: "You will also want to take the things that are done often and condense them into some simpler scripts for your own convenience" -->. Things like:
 
 * Build and Install your app on the kubernetes cluster: 
 ```
@@ -153,29 +153,29 @@ helm upgrade my-app ./my-app -f values-local.yaml
 ```
 helm install other-teams-app https://charts.mycompany.com/other-teams-app-1.2.3.tgz -f values-other-teams-app.yaml
 ```
-* Cleanup
+* Clean up
 ``` 
 helm uninstall my-app \
 && kubectl delete -f my-volume.yaml
 && rm -Rf /path/to/my-volume
 ```
 
-It can be up to you how to script this whether it be in bash, Makefile, npm scripts, Gradle tasks. Whatever suits your team best.
+It can be up to you how to script this<!-- rework preceding text to "You can script this however you like,"--> whether it be in bash, Makefile, npm scripts, Gradle tasks, etc. Use whatever suits your team best.
 
 ## Comparing to Docker Compose
 
-Using Docker Compose for local development is undoubtedly more convenient. For the most part you only need to be familiar two commands to build, run, re-build and re-run, and shutdown your applications in docker: `docker-compose up --build`, and `docker-compose down`. For volumes Docker Compose lets you mount a directory relative to where you execute `docker-compose` from and in a way that works across platforms. Docker Compose is also safer, there's no chance you're going to accidentally `docker-compose up` a mid-developed image into production!
+Using Docker Compose for local development is undoubtedly more convenient <!--add "than kubernetes" -->. For the most part you only need to be familiar with two commands to build, run, re-build and re-run, and shutdown your applications in docker: `docker-compose up --build`, and `docker-compose down`. For volumes, Docker Compose lets you mount a directory relative to where you execute `docker-compose` from and in a way that works across platforms. Docker Compose is also safer - there's no chance you're going to accidentally `docker-compose up` a mid-developed image into production!
 
-Docker Compose does have the disadvantage that it's a duplication of effort to recreate an analogue of your Kubernetes manifests into docker-compose files. But with the extra configurations, volume definitions, and scripting that needs to be added for local Kubernets development, this is probably a negligable difference.
+Docker Compose has the disadvantage that it's a duplication of effort to recreate an analogue of your Kubernetes manifests into docker-compose files. Considering the extra configurations, volume definitions, and scripting that needs to be added for local Kubernetes development, this is probably a negligable difference.
 
-Kubernetes on the other hand more accurately represents what you will be deploying into shared Kubernetes clusters or production. Using a tool like Helm gives us package manager like features of installing externally developed manifest or dependencies without having to redefine them in your local repository. 
+Kubernetes, on the other hand, more accurately represents what you will be deploying into shared Kubernetes clusters or production. Using a tool like Helm gives us package manager-like features of installing externally developed manifest or dependencies without having to redefine them in your local repository. 
 
-However using Kubernetes requires a good familiarity with Kubernetes and its surrounding tools or extra scripting to hide these details. These tools like `kubectl` and `helm` rely on a [context](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-context-and-configuration) which may be set to the wrong Kubernetes cluster and that will cause unwanted trouble! I recommend putting safeguards in place like setting up [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) where possible in the shared or production Kubernetes clusters where possible. Or just simply working within a [namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/) locally that does not exist in other clusters.
+Using Kubernetes requires a good familiarity with Kubernetes and its surrounding tools, or extra scripting to hide these details. These tools like `kubectl` and `helm` rely on a [context](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-context-and-configuration) which could be set to the wrong Kubernetes cluster, which would cause unwanted trouble! I recommend putting safeguards in place like setting up [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) where possible in the shared or production Kubernetes clusters. Or, work within a [namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/) locally that does not exist in other clusters.
 
 ## Final Thoughts
 
 <!-- TODO: Make reference to the 5 criteria established earlier -->
-It's possible to replace Docker Compose with Kubernetes for local development, but for the added complexity and trade-offs it may be worth using both. For most local development, Docker Compose is probably good enough, and much simpler. Using a local Kubernetes cluster is a step up in terms of complexity and effort so it is up to you if you want to take that on. It is definitely worth it for Helm Chart / Manifest development or situations where you absolutely must re-create [a part of] your deployment architecture.
+It's possible to replace Docker Compose with Kubernetes for local development, but for the added complexity and trade-offs it may be worth using both. For most local development, Docker Compose is probably good enough, and much simpler. Using a local Kubernetes cluster is a step up in terms of complexity and effort so it is up to you if you want to take that on. It is definitely worth it for Helm Chart / Manifest development or situations where you absolutely must re-create [a part of]<!--what's with the brackets? did you mean to add a link?--> your deployment architecture.
 
 ## TL;DR
 
@@ -183,7 +183,7 @@ Building and running an image on Kubernetes works because Kubernetes will pull f
 
 To re-build an image and re-run, just delete the old pods running the old image. Newly created pods will come up with the new image.
 
-Docker Deskop's file sharing locations can be found and configured in the Preferences/Settings, a Persistent Volume can be created with a hostPath to one of those locations.
+Docker Deskop's file sharing locations can be found and configured in the Preferences/Settings. A Persistent Volume can be created with a hostPath to one of those locations.
 
 Applications running on Kubernetes can access applications on the host OS via the `host.docker.internal` DNS name.
 
